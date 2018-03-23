@@ -102,7 +102,11 @@ _Note: to disable the ID check add the parameter `disable_validation=True`_
 
 _Note: to disable the ID check add the parameter `disable_validation=True`_
 
-**metric()** - `metric('metric')` Adds a metric to the report. Can be called multiple times to add multiple metrics if needed.
+**metric()** - `metric('metric')` Adds a metric to the report. You can pass a list of metrics if you wish to process the report using multiple metrics.
+
+```python
+    report = suite.report.element('evar1').metric(['visits','pageviews','instances'])
+```
 
 _Note: to disable the ID check add the parameter `disable_validation=True`_
 

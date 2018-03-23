@@ -252,10 +252,26 @@ class Query(object):
         """
         if self.raw.get('metrics', None) == None:
             self.raw['metrics'] = []
-        if disable_validation == False:
+
+        # If the metric provided is a list, return after list is read
+        if isinstance(metric, list):
+
+            for m in metric:
+
+                if disable_validation == False:
+                    self.raw['metrics'].append(self._serialize_value(m, 'metrics'))
+                else:
+                    self.raw['metrics'].append({"id":m})
+
+
+            return self
+
+        # Process single metric
+        if disable_validation == False:        
             self.raw['metrics'].append(self._serialize_value(metric, 'metrics'))
         else:
             self.raw['metrics'].append({"id":metric})
+            
         #self.raw['metrics'] = self._serialize_values(metric, 'metrics')
         #TODO allow this metric to accept a list
         return self
