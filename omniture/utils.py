@@ -1,7 +1,9 @@
-import copy
+from __future__ import absolute_import
+
+from copy import copy
 import datetime
 from dateutil.parser import parse as parse_date
-import logging
+import six
 
 
 class memoize:
@@ -30,7 +32,7 @@ class AddressableList(list):
             matches = [item for item in self if item.title == key or item.id == key]
             count = len(matches)
             if count > 1:
-                matches = map(repr, matches)
+                matches = list(map(repr, matches))
                 error = "Found multiple matches for {key}: {matches}. ".format(
                     key=key, matches=", ".join(matches))
                 advice = "Use the identifier instead."
@@ -61,22 +63,25 @@ class AddressableList(list):
     def __repr__(self):
         return "<AddressableList>"
 
-class AddressableDict(AddressableList):
-    def __getitem__(self, key):
-        item = super(AddressableDict, self).__getitem__(key)
-        return item.value
-
 
 def date(obj):
+    #used to ensure compatibility with Python3 without having to user six
+    try:
+        basestring
+    except NameError:
+        basestring = str
+
     if obj is None:
         return None
     elif isinstance(obj, datetime.date):
-        if hasattr(dt, 'date'):
+        if hasattr(obj, 'date'):
             return obj.date()
         else:
             return obj
-    elif isinstance(obj, basestring):
+    elif isinstance(obj, six.string_types):
         return parse_date(obj).date()
+    elif isinstance(obj, six.text_type):
+        return parse_date(str(obj)).date()
     else:
         raise ValueError("Can only convert strings into dates, received {}"
                          .format(obj.__class__))
@@ -89,7 +94,7 @@ def wrap(obj):
         return [obj]
 
 
-def affix(prefix, base, suffix, connector='_'):
+def affix(prefix=None, base=None, suffix=None, connector='_'):
     if prefix:
         prefix = prefix + connector
     else:
@@ -104,7 +109,7 @@ def affix(prefix, base, suffix, connector='_'):
 
 
 def translate(d, mapping):
-    d = copy.copy(d)
+    d = copy(d)
 
     for src, dest in mapping.items():
         if src in d:

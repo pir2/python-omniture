@@ -1,4 +1,7 @@
 # python-omniture
+[![Build Status](https://travis-ci.org/dancingcactus/python-omniture.svg?branch=master)](https://travis-ci.org/dancingcactus/python-omniture)
+[![codecov](https://codecov.io/gh/dancingcactus/python-omniture/branch/master/graph/badge.svg)](https://codecov.io/gh/dancingcactus/python-omniture)
+
 
 `python-omniture` is a wrapper around the Adobe Analytics API.
 
@@ -12,13 +15,15 @@ Through PyPI (older version):
 
     pip install omniture
 
-Latest and greatest: 
+Latest and greatest:
 
-    pip install git+http://github.com/dancingcactus/python-omniture.git 
+    pip install git+http://github.com/dancingcactus/python-omniture.git
+    
+    supports python 2.7 and 3.5+
 
 ## Authentication
 
-The most straightforward way to authenticate is with: 
+The most straightforward way to authenticate is with:
 
 ```python
     import omniture
@@ -56,13 +61,13 @@ reporting suites:
 ```
 
 You can refer to suites, segments, elements and so on using both their
-human-readable name or their id. So for example `suite.metrics['pageviews']` and `suite.metrics['Page Views']` will work exactly the same. This is especially useful in cases when segment or metric identifiers are long strings of gibberish. That way you don't have to riddle your code with references to `evar16` or `event4` and instead can call them by their title. Just remember that if you change the friendly name in the interface it will break your script. 
+human-readable name or their id. So for example `suite.metrics['pageviews']` and `suite.metrics['Page Views']` will work exactly the same. This is especially useful in cases when segment or metric identifiers are long strings of gibberish. That way you don't have to riddle your code with references to `evar16` or `event4` and instead can call them by their title. Just remember that if you change the friendly name in the interface it will break your script.
 
 ## Running a report
 
 `python-omniture` can run ranked, trended and over time reports. Pathing reports are still in the works
 
-Here's a quick example: 
+Here's a quick example:
 
 ```python
     report = suite.report \
@@ -78,18 +83,18 @@ If you call `print` on the report defintion it will print out the JSON that you 
     report = suite.report \
         .element('page') \
         .metric('pageviews') \
-        
+
     print report
 ```
 
-### Report Options 
-Here are the options you can add to a report. 
+### Report Options
+Here are the options you can add to a report.
 
 **element()** - `element('element_id or element_name', **kwargs)` Adds an element to the report. If you need to pass in additional information in to the element (e.g. `top` or `startingWith` or `classification`) you can use the kwargs to do so. A full list of options available is documented [here](https://marketing.adobe.com/developer/en_US/documentation/analytics-reporting-1-4/r-reportdescriptionelement). If multiple elements are present then they are broken-down by one another
 
 _Note: to disable the ID check add the parameter `disable_validation=True`_
 
-**breakdown()** - `breakdown('element_id or element_name', **kwargs)` Same as element. It is included to make report queries more readable when there are multiple element. Use when there are more than one element. eg. 
+**breakdown()** - `breakdown('element_id or element_name', **kwargs)` Same as element. It is included to make report queries more readable when there are multiple element. Use when there are more than one element. eg.
 
 ```python
     report = suite.report.element('evar1').breakdown('evar2')
@@ -97,14 +102,14 @@ _Note: to disable the ID check add the parameter `disable_validation=True`_
 
 _Note: to disable the ID check add the parameter `disable_validation=True`_
 
-**metric()** - `metric('metric')` Adds a metric to the report. Can be called multiple times to add multiple metrics if needed. 
+**metric()** - `metric('metric')` Adds a metric to the report. Can be called multiple times to add multiple metrics if needed.
 
 _Note: to disable the ID check add the parameter `disable_validation=True`_
 
-**range()** - `range('start', 'end=None', 'months=0', 'days=0', 'granularity=None')` Sets the date range for the report. All dates shoudl be listed in ISO-8601 (e.g. 'YYYY-MM-DD')
+**range()** - `range('start', 'stop=None', 'months=0', 'days=0', 'granularity=None')` Sets the date range for the report. All dates shoudl be listed in ISO-8601 (e.g. 'YYYY-MM-DD')
 
 * **Start**  --  Start date for the report. If no stop date is specified then the report will be for a single day
-* **Stop** -- End date for the report. 
+* **Stop** -- End date for the report.
 * **months** -- Number of months back to run the report
 * **days** -- Number of days back from now to run the report
 * **granularity** -- The Granularity of the report (`hour`, `day`, `week`, `month`)
@@ -126,12 +131,17 @@ _Note: to disable the ID check add the parameter `disable_validation=True`_
 
 **run()** -- `run(defaultheartbeat=True)` Run the report and check the queue until done. The `defaultheartbeat` writes a . (period) out to the console each time it checks on the report.
 
+**async()** -- Queue the report to Adobe but don't block the program. Use `is_ready()` to check on the report
+
+**is_ready()** -- Checks if the queued report is finished running on the Adobe side. Can only be called after `async()`
+
+**get_report()** -- Retrieves the report object for a finished report. Must call `is_ready()` first.
 
 **set()** -- `set(key, value)` Set a custom attribute in the report definition
 
 ## Using the Results of a report
 
-To see the raw output of a report. 
+To see the raw output of a report.
 ```python
     print report
 ```
@@ -140,9 +150,9 @@ If you need an easy way to access the data in a report:
 
 ```python
     data = report.data
-```    
-    
-This will generate a list of dicts with the metrics and elements called out by id. 
+```
+
+This will generate a list of dicts with the metrics and elements called out by id.
 
 
 ### Pandas Support
@@ -162,39 +172,39 @@ In these cases, it can be useful to use the lower-level access this module provi
 
 ```python
     query = suite.report \
-        .element('pages') 
+        .element('pages')
         .metric('pageviews)
         .set(anomalyDetection='month')
-        
+
 
     print query
 ```
 
 
 ### JSON Reports
-The underlying API is a JSON API. At anytime you can get a string representation of the report that you are created by calling report.json(). 
+The underlying API is a JSON API. At anytime you can get a string representation of the report that you are created by calling report.json().
 
 ```python
     json_string = suite.report.element('pageviews').json()
 ```
 
-That JSON can be used in the [API explorer](https://marketing.adobe.com/developer/api-explorer). You have have it formatted nice and printed out without the unicode representations if you use the following 
+That JSON can be used in the [API explorer](https://marketing.adobe.com/developer/api-explorer). You have have it formatted nice and printed out without the unicode representations if you use the following
 
-```python 
+```python
     print suite.report.element('pageviews')
 ```
 
-You can also create a report from JSON or a string representation of JSON. 
+You can also create a report from JSON or a string representation of JSON.
 
 ```python
     report = suite.jsonReport("{'reportDescription':{'reportSuiteID':'foo'}}")
 ```
 
-These two functions allow you to serialize and unserialize reports which can be helpful to re-run reports that error out. 
+These two functions allow you to serialize and unserialize reports which can be helpful to re-run reports that error out.
 
 
 ### Removing client side validation to increase performance
-The library checks to make sure the elements, metrics and segments are all valid before submitting the report to the server. To validate these the library will make an API call to get the elements, metrics and segments. The library is pretty effecient with the API calls meaning it will only request them when needed and it will cache the request for subsequent calls. However, if you are running a script on a daily basis the with the same metrics, dimensions and segments this check can be redundant, especially if you are running reports across multiple report suites. To disable this check you woudl add the `disable_validation=True` parameter to the method calls. Here is how you would do it. 
+The library checks to make sure the elements, metrics and segments are all valid before submitting the report to the server. To validate these the library will make an API call to get the elements, metrics and segments. The library is pretty effecient with the API calls meaning it will only request them when needed and it will cache the request for subsequent calls. However, if you are running a script on a daily basis the with the same metrics, dimensions and segments this check can be redundant, especially if you are running reports across multiple report suites. To disable this check you woudl add the `disable_validation=True` parameter to the method calls. Here is how you would do it.
 
 ```python
 
@@ -210,7 +220,7 @@ One thing to note is that this method only support the IDs and not the friendly 
 
 ### Running multiple reports
 
-If you're interested in automating a large number of reports, you can speed up the 
+If you're interested in automating a large number of reports, you can speed up the
 execution by first queueing all the reports and only _then_ waiting on the results.
 
 Here's an example:
@@ -235,19 +245,44 @@ Here's an example:
 
 `omniture.sync` can queue up (and synchronize) both a list of reports, or a dictionary.
 
+### Running Report Asynchrnously
+If you want to run reports in a way that doesn't block. You can use something like the following to do so. 
+
+```python-omniture
+
+query = suite.report \
+    .range('2017-01-01', '2017-01-31', granularity='day') \
+    .metric('pageviews') \
+    .filter(segment=segment)
+    .async()
+  
+print(query.check())
+#>>>False    
+print(query.check())
+#>>>True
+#The report is now ready to grab
+
+report = query.get_report()
+
+```
+
+This is super helpful if your reports take a long time to run because you don't have to keep your laptop open the whole time, especially if you are doing the queries interactively.
+    
+
+
 ### Making other API requests
-If you need to make other API requests that are not reporting reqeusts you can do so by 
-calling `analytics.request(api, method, params)` For example if I wanted to call 
-Company.GetReportSuites I would do 
+If you need to make other API requests that are not reporting reqeusts you can do so by
+calling `analytics.request(api, method, params)` For example if I wanted to call
+Company.GetReportSuites I would do
 
 ```python
     response = analytics.request('Company', 'GetReportSuites')
 ```
 
 ### Contributing
-Feel free to contribute by filing issues or issuing a pull reqeust. 
+Feel free to contribute by filing issues or issuing a pull reqeust.
 
-#### Build 
+#### Build
 If you want to build the module
 
 ```bash
@@ -257,8 +292,10 @@ If you want to build the module
 If you want to run unit tests
 
 ```bash
-    python testAll.py
+    python -m unittest discover
 ```
 
 Contributers
-* Special Thanks to [adibbehjat](https://github.com/adibbehjat() for helping think through the client side validation and when to skip it
+Special Thanks to
+* [adibbehjat](https://github.com/adibbehjat) for helping think through the client side validation and when to skip it
+* [aarontoledo](https://github.com/aarontoledo) for helping with the dreaded classificaitons bug
